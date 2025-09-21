@@ -4,9 +4,54 @@ import { Student } from '../models/student.js';
 import createHttpError from 'http-errors';
 
 // get all students
+// export const getStudents = async (req, res) => {
+//   const students = await Student.find();
+//   res.status(200).json(students);
+// };
+
 export const getStudents = async (req, res) => {
-  const students = await Student.find();
-  res.status(200).json(students);
+  // Get parameters from pagination
+  const {
+    page = 1,
+    perPage = 10,
+    gender,
+    minAvgMark,
+    sortBy = '_id',
+    sortOrder = 'asc',
+  } = req.query;
+
+  const skip = (page - 1) * perPage;
+
+  // Create a base query to collection
+  const studentsQuery = Student.find();
+
+  // Apply filters if provided
+  if (gender) {
+    studentsQuery.where('gender').equals(gender);
+  }
+  if (minAvgMark) {
+    studentsQuery.where('avgMark').gte(minAvgMark);
+  }
+
+  // Execute the query and count total items in parallel
+  const [totalItems, students] = await Promise.all([
+    studentsQuery.clone().countDocuments(),
+    studentsQuery
+      .skip(skip)
+      .limit(perPage)
+      .sort({ [sortBy]: sortOrder }),
+  ]);
+
+  // Calculate total pages
+  const totalPages = Math.ceil(totalItems / perPage);
+
+  res.status(200).json({
+    page,
+    perPage,
+    totalItems,
+    totalPages,
+    students,
+  });
 };
 
 // get student by id
@@ -40,7 +85,7 @@ export const deleteStudent = async (req, res, next) => {
   });
 
   if (!student) {
-    next(createHttpError(404, "Student not found"));
+    next(createHttpError(404, 'Student not found'));
     return;
   }
 
