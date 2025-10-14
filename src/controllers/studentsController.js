@@ -15,6 +15,7 @@ export const getStudents = async (req, res) => {
     page = 1,
     perPage = 10,
     gender,
+    search,
     minAvgMark,
     sortBy = '_id',
     sortOrder = 'asc',
@@ -24,6 +25,16 @@ export const getStudents = async (req, res) => {
 
   // Create a base query to collection
   const studentsQuery = Student.find();
+
+  // Apply text search if provided (uses MongoDB text index)
+  if (search) {
+    studentsQuery.where({ $text: { $search: search } });
+  }
+
+  //Text search from regex
+  // studentsQuery.where({
+  //   name: { $regex: search, $options: "i" },
+  // });
 
   // Apply filters if provided
   if (gender) {

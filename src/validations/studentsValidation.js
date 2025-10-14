@@ -10,8 +10,9 @@ export const getStudentsSchema = {
     perPage: Joi.number().integer().min(5).max(20).default(10),
     gender: Joi.string().valid('male', 'female', 'other'),
     minAvgMark: Joi.number().positive(),
-    sortBy: Joi.string().valid("_id", "name", "age", "avgMark").default("_id"),
-    sortOrder: Joi.string().valid("asc", "desc").default("asc"),
+    sortBy: Joi.string().valid('_id', 'name', 'age', 'avgMark').default('_id'),
+    sortOrder: Joi.string().valid('asc', 'desc').default('asc'),
+    search: Joi.string().trim().allow(''),
   }),
 };
 
